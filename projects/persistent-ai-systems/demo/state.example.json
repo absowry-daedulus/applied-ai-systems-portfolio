@@ -1,0 +1,14 @@
+{
+  "schema": "persistent-ai.state.v1",
+  "project": "portfolio-demo",
+  "status": "ACTIVE",
+  "active_context": "CTX-0003",
+  "last_event_id": "EVT-0005",
+  "last_checkpoint_id": "CHK-0002",
+  "resume_target": "Continue the next verified implementation step.",
+  "constraints": [
+    "Do not substitute conversational memory for failed canonical retrieval.",
+    "Do not promote inferred state without evidence.",
+    "Fail closed when canonical identity or state cannot be verified."
+  ]
+}
