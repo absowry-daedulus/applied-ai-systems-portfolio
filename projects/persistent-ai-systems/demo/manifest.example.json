@@ -1,0 +1,8 @@
+{
+  "files": {
+    "bootstrap.example.md": "8e13d903729a36c883c915d12e8a1caf6dbc236c1ff998386616f256e2dced8a",
+    "event_log.example.jsonl": "ab0bb6a28cf5771b241d85f3079ac6d045a300585f8a9c1be6dce76451116c96",
+    "state.example.json": "ccdbe17c6eb9565ac633e2d64bc2d07c4ed0363368a89a92393b8bf878e2609a"
+  },
+  "schema": "persistent-ai.manifest.v1"
+}
