@@ -1,0 +1,5 @@
+{"event_id":"EVT-0001","summary":"Established an external canonical state store.","type":"architecture"}
+{"event_id":"EVT-0002","summary":"Added positive source verification before reconstruction.","type":"verification"}
+{"event_id":"EVT-0003","summary":"Fresh-session discovery failed closed instead of substituting conversational memory.","type":"failure"}
+{"event_id":"EVT-0004","summary":"Corrected deterministic source resolution and preserved the failed run as evidence.","type":"recovery"}
+{"event_id":"EVT-0005","summary":"Verified state, event tail, and resume target agree at the current checkpoint.","type":"checkpoint"}
