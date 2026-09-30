@@ -1,0 +1,12 @@
+{
+  "schema": "persistent-ai.locator.v1",
+  "project": "portfolio-demo",
+  "repository": {
+    "repository_id": "EXAMPLE-STABLE-ID",
+    "repository_full_name": "example-owner/canonical-state-store",
+    "branch": "main"
+  },
+  "bootstrap_path": "bootstrap.example.md",
+  "state_path": "state.example.json",
+  "authority_boundary": "The locator identifies the canonical source but contains no canonical project state."
+}
