@@ -1,5 +1,9 @@
 # CK-17 Engineering Investigation
 
+> **Status: Active investigation — not yet included as a featured portfolio project.**
+
+This case study is being developed using a synthetic industrial cooling-system dataset. Investigation and tooling are still in progress; conclusions will be published only after the analysis and blind validation process are complete.
+
 ## Purpose
 To test the creator of this portfolio with a synthetic scenario about a plausible, real-world condition that might occur in an industrial style workplace. 
 
