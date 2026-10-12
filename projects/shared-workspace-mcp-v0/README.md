@@ -29,6 +29,30 @@ The V0 interface had to:
 
 The design intentionally treats file-version identity and execution authority as different concepts. A correct hash can prove which version the caller read; it does not grant permission by itself.
 
+## Architecture at a Glance
+
+The diagram shows the **bounded MCP capability interface**, not the private deployment or its wider control infrastructure. The workspace server enforces path and write preconditions itself; the MCP client does not receive shell, Git, or unrestricted filesystem authority.
+
+```mermaid
+flowchart TD
+    A["AI collaborator / MCP client"] --> B["Streamable-HTTP MCP server"]
+    B --> C["Four tools: status, list, read, write"]
+    C --> D{"Requested operation"}
+    D -->|"status"| S["Health response"]
+    D -->|"list / read"| R["Workspace-scoped path checks<br/>Read: UTF-8 up to 64 KiB + SHA-256"]
+    D -->|"write"| W["Workspace-scoped path checks<br/>No .git writes; UTF-8 up to 64 KiB"]
+    W --> P{"Create or update precondition"}
+    P -->|"Missing; no expected hash"| N["Stage + fsync<br/>Exclusive create, no overwrite"]
+    P -->|"Existing; hash matches"| U["Stage + fsync<br/>Recheck hash + atomic replace"]
+    P -->|"Conflict"| X["Refuse"]
+    R --> F[("Approved workspace root")]
+    N --> F
+    U --> F
+    W -. "Invalid path or request" .-> X
+```
+
+**Boundary in practice:** invalid paths and stale writes are refused. Listing is deterministic; reads return content, byte count, and SHA-256. Writes are staged and committed through distinct create and update paths. The documented narrow race between final update revalidation and replacement remains an accepted V0 limitation.
+
 ## Interface
 
 The MCP server exposes four tools:
