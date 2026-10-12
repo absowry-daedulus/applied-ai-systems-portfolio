@@ -11,11 +11,16 @@ I now apply that systems and validation experience to AI-enabled tools, with par
 
 ## Featured Projects
 
-This repository focuses on three main areas:
+### AI Systems Architecture
 
-- Engineering Investigation
-- AI Systems Architecture
-- Engineering Evidence & Knowledge
+- [Persistent AI Systems — Canonical State & Recovery](projects/persistent-ai-systems/README.md)
+- [Shared Workspace MCP V0 — Bounded AI Collaboration Interface](projects/shared-workspace-mcp-v0/README.md)
+
+### Engineering Investigation
+
+- [CK-17 Engineering Investigation](projects/experiments/ck-17-engineering-investigation/README.md) — active synthetic investigation
+
+The repository also includes supporting evidence and examples showing how requirements, implementation decisions, failures, tests, and validation results are preserved.
 
 ## How I Work
 
@@ -25,4 +30,4 @@ Throughout the process, I maintain a traceable record of decisions, observations
 
 ## Confidentiality Notice
 
-Portfolio examples use only synthetic, sanitized, or personally owned material. No employer or customer confidential information is included in this repository. 
+Portfolio examples use only synthetic, sanitized, or personally owned material. No employer or customer confidential information is included in this repository.
