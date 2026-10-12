@@ -1,75 +1,150 @@
-# Persistent AI Systems — Canonical State & Recovery
+# Persistent AI Systems — Verified State and Recovery
 
-## Problem
-While working with a frontier LLM, I noticed that during long sessions or between chat instances the LLM could lose its place in projects we had previously been working on. This caused friction when moving from one project or instance to another and then returning to the original place where we left off. So we began working on a system that would establish persistence and provenance for the multiple projects we had going.
+> **Status:** Implemented and exercised in a private hosted-AI prototype. This public case study and demonstrator are sanitized; they are not a release of the private canonical system.
 
-## Requirements and Constraints
-1. A system that was capable of storing the place where we left off previously.
-2. Enough detail to know what we had already learned or discovered, reasoned over, decided, and implemented.
-3. A set of instructions that could be called when we were finished working on a project for the time being that would have the LLM durably save to GitHub.
-4. A set of instructions that could direct the LLM to the correct GitHub repo and that had checks to make sure the persistence system was healthy and could be trusted.
-   
+## At a Glance
+
+**Problem:** Long-running AI projects lose reliable operational context when a chat session ends, a tool call fails, or a different model instance resumes the work. A plausible answer about prior state is not enough to establish that it is *correct*.
+
+**Solution:** I developed a Git-backed continuity architecture that separates the reasoning model from authoritative project state. A fresh session verifies an external locator, reconstructs from a bounded set of canonical records, and refuses to proceed when required integrity or predecessor-continuity evidence is missing. The system prepares logically related closeout records together, publishes through a guarded Git commit, and relies on an independent verifier rather than a model's statement that a write succeeded.
+
+**Observed outcome:** Isolated-session reconstruction and cross-session handoff passed after an initial discovery failure. Separate fault-injection tests demonstrated safe behavior for unpublished commits, stale writers, ambiguous publication acknowledgments, and duplicate-operation retries. A GitHub Actions verifier independently checks continuity invariants and publishes an attestation for accepted closeouts.
+
+The engineering goal is **auditable functional continuity**, not a claim that the same LLM computation runs continuously.
+
+## Requirements and Design Constraints
+
+1. Recover the current project status, constraints, unresolved work, and next resume point after a session boundary.
+2. Treat one positively identified Git repository and branch as authority; prior conversation and model memory are supplemental, not fallback authority.
+3. Preserve decisions, experiment outcomes, architectural changes, and relevant provenance as inspectable artifacts and immutable consequential events.
+4. Keep ordinary startup work bounded even as history grows; avoid reconstructing an entire event ledger on each boot.
+5. Publish related event, transaction, audit, and state changes as one guarded logical update, not independent partial commits.
+6. Detect interrupted writes, stale parents, duplicate logical operations, mismatched hashes, and incomplete attestations.
+7. Fail closed on unresolved authority or integrity conflicts; separate advice and generated text from verified state transitions.
+
 ## Architecture
- The persistence architecture is separated into several layers, each with a specific responsibility:
 
-1. **Stage 0 Locator**  
-   A small external pointer identifies the expected canonical repository, branch, and location of the bootstrap instructions. It contains no project state itself.
+```mermaid
+flowchart TD
+    A["External Stage 0 locator"] --> B["Verify Git repository identity"]
+    B --> C{"Identity verified?"}
+    C -->|"No"| STOP["Stop: no memory fallback"]
+    C -->|"Yes"| D["Bootstrap at anchored Git commit"]
+    D --> E["Read bounded state, event, transaction and audit heads"]
+    E --> F{"Continuity and predecessor evidence valid?"}
+    F -->|"No"| STOP
+    F -->|"Yes"| G["Open new continuity interval"]
+    G --> H["Work: durable artifacts and consequential events"]
+    H --> I["Prepare one atomic closeout candidate"]
+    I --> J["Fresh-parent guard and Git publication"]
+    J --> K["Positive read-back + independent verifier"]
+    K --> L["Durable PASS attestation for successor"]
+```
 
-2. **Bootstrap Instructions**  
-   A fresh LLM instance follows a defined startup procedure that verifies the canonical source before attempting to reconstruct the project. If the source cannot be verified, the boot process stops rather than substituting remembered or inferred information.
+The diagram summarizes the normal successful path. A failed publication, invalid attestation, or ambiguous tool response enters explicit reconciliation rather than being silently treated as success.
 
-3. **Canonical State**  
-   A compact state record contains the information required to continue the project correctly, including the current operating state, important constraints, and the next intended resume point.
+### 1. Discover and verify authority
 
-4. **Event History and Durable Artifacts**  
-   Decisions, failures, experiments, architectural changes, and other consequential work are preserved as durable records. An event ledger maintains the chronological history of significant changes while more detailed artifacts contain the supporting evidence.
+A small **Stage 0 locator** names the expected source. It does not contain operational project state. The fresh instance positively verifies repository identity, retrieves the bootstrap contract, and anchors reconstruction to a particular Git commit before reading state.
 
-5. **Open and Closeout Process**  
-   At the beginning of a session, the system reconstructs the current project state from the verified canonical source. At the end of a session, consequential work is reconciled into the persistent records and a new resume point is established.
+This resolved a real circular dependency: the earliest reconstruction instructions lived in the repository the new session did not yet know how to find.
 
-6. **Deterministic Verification**  
-   Scripts and integrity checks independently verify important relationships between the stored records. This allows some persistence checks to be performed without depending on the LLM's interpretation of the data.
+### 2. Reconstruct from bounded roots
 
-## Why It Was Designed This Way
-1. This persistennce system was designed in such a way as to prevent the LLM from becoming the governing authority of the persistence system, but rather a participant.
-2. LLM agnosticism was also a targeted design so that the persistence system could be utilized across multiple models.
+The active design uses small, directly addressable records for boot-critical state, event position, the current continuity transaction, its audit record, and—when required—the predecessor's independent verification attestation.
 
-## Failure History and Design Changes
+Full historical artifacts remain available for investigation without being required on every startup.
 
-The persistence architecture was not designed all at once. Several failures exposed assumptions in the original design and resulted in changes to how state is discovered, written, and verified.
+**Design invariant:** History can grow without bound; the current authority-reconstruction workload should remain bounded.
 
-### Canonical Source Discovery Failure
+### 3. Separate durability from continuity
 
-During the first clean-session boot test, a new LLM instance was unable to reliably locate the repository containing the persistence system.
+Not every useful conversation needs a Git commit, and not every durable file change is a complete cross-session checkpoint.
 
-The system behaved as intended by stopping rather than substituting conversational memory or guessing where the authoritative state was stored. However, the test exposed a circular dependency: the instructions explaining how to reconstruct the project were stored inside the repository that the new instance first needed to locate.
+| Level | Meaning | Example |
+|---|---|---|
+| **D0** | Provisional working discussion | A proposed idea or hypothesis |
+| **D1** | Durable, read-back-verified artifact | An accepted experiment or design record |
+| **D2** | Reconciled continuity state | Matching session, event, transaction, state, and verification evidence |
 
-**Design change:** A small Stage 0 locator was introduced outside the canonical project state. Its purpose is only to identify the expected canonical source and allow its identity to be positively verified. It contains no project state itself.
+A fresh session must not confuse partial durable work with a fully verified predecessor closeout.
 
-### Incomplete Closeout and Continuity Rollback
+### 4. Publish with explicit transaction boundaries
 
-In a later session, a closeout was reported as complete even though the current state, event history, and session record had not all been reconciled.
+At closeout, consequential results are reconciled, immutable event records and state projections are prepared, and a deterministic builder constructs the audit record and cryptographic bindings.
 
-When a fresh instance started afterward, it correctly trusted the canonical records but reconstructed an older project state and an outdated resume point. The stored information was internally plausible, but it was stale.
+Preparation creates Git objects but does **not** advance the canonical branch. Immediately before publication, the writer rechecks the expected parent. One non-forced branch update publishes the complete logical mutation, followed by positive read-back and independent verification.
 
-This demonstrated that successfully writing some information was not enough. The system needed a defined point at which the stored state could be considered sufficiently complete for another instance to inherit.
+If the response to publication is missing or ambiguous, the system inspects canonical Git state and the stable operation identity before deciding whether any retry is safe. Blind retries are not allowed.
 
-**Design change:** Persistence was divided into durability levels, with explicit checkpoints at continuity boundaries. Closeout became a reconciliation process rather than simply a summary, requiring the important state, event history, and next resume point to agree before the session is considered durably closed.
+### 5. Require independent attestation
 
-### Event Ledger Truncation
+The verification workflow tests the deterministic audit builder, independently checks continuity relationships and hashes, and records durable PASS evidence for valid completed transactions. The next session checks the predecessor's matching attestation instead of relying on a chat summary or an optimistic success message.
 
-A persistence write later replaced part of the historical event ledger with only its recent tail.
+The model **proposes and interprets**. Git records authority; deterministic code and independent verification decide whether the continuity evidence agrees.
 
-The remaining records appeared valid, but part of the project history had been lost from the current version of the ledger. A deterministic continuity check detected the inconsistency, and the missing records were recovered from Git history.
+## Failures That Changed the Design
 
-The failure demonstrated that an "append-only" design intention does not guarantee an append-only result.
+| Failure / test condition | What it exposed | Engineering response |
+|---|---|---|
+| Fresh session could not locate canonical state | Bootstrap instructions were hidden behind their own discovery dependency | Introduced the external Stage 0 locator and positive repository-identity check |
+| Incomplete closeout produced a stale resume point | Several successful writes did not imply a complete continuity checkpoint | Defined durability levels, coherent closeout records, and successor verification |
+| Historical event ledger was truncated by a write | “Append-only” as an intention was insufficient | Strengthened immutable records, positive read-back, and deterministic ledger/state checks |
+| Prepared commit interrupted before branch publication | Git objects can exist without being authoritative | Demonstrated that unpublished candidates remain invisible; recover from the published head |
+| Stale writer attempted to publish from an old parent | Concurrent authors can otherwise overwrite a newer lineage | Required a fresh-parent guard and non-forced publication |
+| Publication acknowledgment was treated as lost | Tool responses do not determine whether a commit exists | Reconstructed the result from Git lineage, operation identity, and state read-back |
+| Duplicate logical operation retry | A second append could duplicate an already completed action | Added operation-ID reconciliation and uniqueness verification |
 
-**Design change:** Positive read-back and deterministic verification were strengthened. Related persistence changes were increasingly treated as a single guarded logical publication rather than independent writes, and historical corrections were recorded as new events rather than rewriting the meaning of previous records.
+These are development and regression results, not a claim that every possible failure mode has been eliminated.
 
-## Verification and Validation
+## Verification Evidence
 
-## What It Demonstrates
+The private project has been tested through progressively more realistic boundaries:
 
-## Limitations and Open Questions
+- **Fresh-session discovery and recovery:** after the initial failure, an isolated successor verified the source, reconstructed the operating state, and completed a cross-session handoff. See the [sanitized discovery failure record](evidence/fresh-session-discovery-failure.md).
+- **Git fault injection:** an intentionally unpublished candidate remained invisible; a stale writer was rejected; lost-acknowledgment recovery and duplicate-operation prevention were exercised on isolated branches.
+- **Deterministic integrity:** continuity audits bind transaction snapshots and predecessor records with SHA-256. Regression tests deliberately corrupt hashes or transaction relationships to confirm rejection.
+- **Independent GitHub verification:** an automated workflow checks the published continuity state and persists matching PASS attestations. A successful API response alone is not accepted as verification.
+- **Recent development hardening:** a bounded one-pass closeout preparation procedure was independently safety-reviewed and tested with isolated Git interruption/recovery scenarios. Its end-to-end latency improvement was **not established** by those tests.
 
-## Project Files
+The tests are scoped to the actual hosted Git/GitHub workflow. They do not establish uninterrupted operation, unlimited transcript recovery, or behavioral equivalence across arbitrary models.
+
+## Try the Sanitized Demonstrator
+
+The public `demo/` folder is a deliberately reduced illustration of the trust boundary, not a clone of the full private runtime.
+
+- [Locator example](demo/locator.example.json): source addressing without project state.
+- [Bootstrap example](demo/bootstrap.example.md): source verification and fail-closed reconstruction rules.
+- [State example](demo/state.example.json) and [event log](demo/event_log.example.jsonl): synthetic continuity artifacts.
+- [Manifest](demo/manifest.example.json) and [snapshot verifier](demo/verify_snapshot.py): simple SHA-256 and event-tail checks.
+
+From the project directory:
+
+```bash
+python demo/verify_snapshot.py
+```
+
+The example verifier checks the listed file hashes, duplicate event IDs, and agreement between the state pointer and event-log tail. **It does not implement the private V2.1 audit chain, atomic publisher, or GitHub attestation workflow.**
+
+## Engineering Approach and Transferable Skills
+
+This was an AI-assisted engineering project, with human-controlled requirements, architecture decisions, failure review, authorization, and acceptance. I used the same habits I developed in mechanical and test engineering: define what must be observable, instrument failure points, separate inferred state from measured evidence, test recovery paths, and refuse to call a condition verified until it has a positive postcondition.
+
+The work demonstrates:
+
+- systems decomposition and boundary design;
+- model-independent state and provenance architecture;
+- optimistic concurrency and transaction reasoning;
+- fault-injection and regression-driven validation;
+- human-governed AI integration and clear authority limits;
+- technical documentation that connects decisions to evidence.
+
+## Boundaries and Next Work
+
+This is a **working hosted continuity system**, not a claim of conscious or continuously running AI. The reasoning model can be replaced, but equivalence of different models is not assumed. Source-native conversation capture and archive reconciliation remain separate problems; the model cannot guarantee access to every prior conversational turn.
+
+The private architecture also does not mean that the public demonstrator is production-ready or contains all of the system's controls. Future work includes measuring complete closeout latency under ordinary workloads, validating broader model/runtime migrations, and moving timekeeping and operational state into a local persistent control layer.
+
+## Publication and Confidentiality
+
+The source implementation and canonical project history remain private. This portfolio preserves sanitized engineering evidence, a limited demonstrator, and the reasoning behind key design choices without publishing credentials, private project content, or unrelated personal and workplace data.
