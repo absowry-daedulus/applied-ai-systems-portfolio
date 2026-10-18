@@ -13,7 +13,7 @@ I now apply that systems and validation experience to AI-enabled tools, with par
 
 ### AI Systems Architecture
 
-- [Persistent AI Systems — Canonical State & Recovery](projects/persistent-ai-systems/README.md)
+- [Persistent AI Systems — Canonical State & Recovery](projects/persistent-ai-systems/README.md) — active development; [V3 engineering evolution](projects/persistent-ai-systems/EVOLUTION.md)
 - [Shared Workspace MCP V0 — Bounded AI Collaboration Interface](projects/shared-workspace-mcp-v0/README.md)
 
 ### Engineering Investigation
