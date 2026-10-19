@@ -16,7 +16,7 @@ The earlier system established verified state recovery between AI conversations.
 
 As the project developed, the session-based approach became a limitation. Important findings and decisions could remain provisional until the conversation was closed. Long sessions also made the final review and reconciliation process more difficult to manage.
 
-V3 changes the unit of saved work from a completed conversation to an individually verified update. The objective is to preserve consequential work when it occurs without removing the checks that make the saved record trustworthy.
+With V3, important information can be saved and verified as work progresses rather than waiting until a conversation ends. This reduces the amount of information that must be reconciled at closeout while retaining the verification and recovery controls established in the earlier system.
 
 ### Implementation
 
