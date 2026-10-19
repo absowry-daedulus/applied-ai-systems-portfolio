@@ -86,23 +86,49 @@ These are known engineering limitations, not accepted assumptions about how the 
 
 ### Current Outcome
 
-Persistence V3 is the active method used to preserve authoritative project changes. Verified updates no longer depend on ending a conversation, and the next session can retrieve the current state and work handoff without a required startup write.
+Persistence V3 is now the active method for maintaining authoritative project information.
 
-The engineering objective is **reliable, auditable project continuity**. This is not a claim of uninterrupted model operation, complete conversational recall, or production-ready deployment.
+Important updates can be saved and verified throughout a conversation rather than waiting for a session closeout. A new session can recover the current project state and work handoff using GitHub records without creating a new startup transaction.
+
+This process has been demonstrated within the tested GitHub environment. Further work is needed to simplify verification across different AI services and to expand live failure and recovery testing.
+
+The goal is **reliable, verifiable project continuity**, not uninterrupted AI operation or complete recall of every conversation.
 
 ## October 2026 — Cross-Model Recovery Investigation
 
-**Status:** Experimental; full recovery using a different AI provider has not been demonstrated.
+**Status:** In progress. Full recovery using a different AI provider has not yet been demonstrated.
 
-A related test asks whether another AI model can recover the same project state without access to previous conversations.
+An important design goal is to allow the reasoning model to be replaced without losing the project's verified information or operating constraints.
 
-In an initial trial, a different model received only the repository locator and the instruction to verify canonical state. Its repository import did not expose enough readable information to complete verification. The model returned the required failure message rather than claiming a successful recovery.
+To evaluate this, we began testing whether an unfamiliar AI model could locate and recover the project's authoritative state using only a small repository configuration file and the documented startup procedure.
 
-That is a positive result for the **fail-closed requirement**, not a successful cross-model boot.
+### Initial Tests
 
-A second provider's integration requested broader repository permissions than the read-only experiment required. Access to the protected project repository was not granted, so no recovery test was completed through that integration.
+**Test 1 — Missing Verification Evidence**
 
-These trials exposed two practical issues: models need a dependable way to retrieve verification evidence, and connector permissions must match the intended task. The next test must demonstrate actual retrieval, verification, and correct state reconstruction—not merely a convincing summary.
+The first external model received the repository location and startup requirements without previous project history.
+
+Its repository import did not provide enough readable information to complete verification. The model correctly returned the required failure response rather than claiming it had recovered the project.
+
+**Result:** The failure behavior worked in this test. Project recovery was not achieved.
+
+**Test 2 — Repository Permission Review**
+
+A second AI provider was evaluated for the same recovery test. Its GitHub integration requested write permissions to repository resources that were not necessary for read-only recovery.
+
+The authorization was declined before access to the protected repository was granted.
+
+**Result:** The intended permission boundary was maintained. No recovery test was completed with this provider.
+
+### Findings and Next Test
+
+These experiments highlighted two requirements for model portability.
+
+First, each AI environment needs access to readable project records and the evidence required to verify them. Second, that access must be limited to the operations needed for the task.
+
+The next test will use a consistent read-only interface to provide the required GitHub evidence. Success will require the model to verify the current project state, identify the correct work handoff, and recognize any restrictions or unresolved issues.
+
+Until that test succeeds, **cross-model recovery remains an engineering objective rather than a demonstrated capability.**
 
 ## Related Development
 
