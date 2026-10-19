@@ -2,6 +2,8 @@
 
 > **Status:** Implemented and exercised in a private hosted-AI prototype. This public case study and demonstrator are sanitized; they are not a release of the private canonical system.
 
+> **Development update — October 2026:** Persistence V3 now saves and verifies important changes during a session using controlled GitHub publishing. This page preserves the earlier verified-state and recovery work as its foundation. See the [engineering evolution log](EVOLUTION.md) for V3 implementation, test results, unresolved work, and the ongoing cross-model recovery investigation.
+
 ## At a Glance
 
 **Problem:** Long-running AI projects lose reliable operational context when a chat session ends, a tool call fails, or a different model instance resumes the work. A plausible answer about prior state is not enough to establish that it is *correct*.
