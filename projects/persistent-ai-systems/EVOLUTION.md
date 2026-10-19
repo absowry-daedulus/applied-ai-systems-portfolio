@@ -56,11 +56,33 @@ The distinction is important: **a completed software operation is not necessaril
 
 ### Findings and Remaining Limitations
 
-An infrastructure change during the transition did not satisfy the existing prepublication review sequence. The failed checks were preserved, and a one-time, operator-reviewed deviation was recorded. Later checks were not treated as retroactive evidence that the original procedure passed. A compliant process for future protected-infrastructure changes remains to be completed and tested.
+Testing and implementation identified several areas requiring further work.
 
-The project includes code for deterministic, read-only startup verification. However, making that checker available consistently in hosted AI environments remains an integration problem. A model's claim that it has recovered project state is not accepted as a substitute for the required evidence.
+**Protected Infrastructure Changes**
 
-Additional controlled failure testing is also needed for the live publishing and recovery process. Earlier isolated fault tests remain useful, but they do not establish how every live failure will behave.
+During the V3 transition, one infrastructure change did not satisfy the required prepublication review procedure. The failed checks were retained in the engineering record, and the operator approved a one-time exception for that specific change.
+
+Subsequent testing confirmed the implemented publishing controls, but those results do not change the outcome of the original review.
+
+A revised procedure for future changes to protected infrastructure still needs to be developed and tested.
+
+**Startup Verification**
+
+The project includes an automated checker designed to verify repository identity, publishing history, and the current project state without modifying the repository.
+
+The verification requirements have been exercised through direct inspection of GitHub records. However, the automated checker has not been consistently executable from the hosted AI environments used during development.
+
+Providing a dependable way for different AI environments to run or consume those checks remains an integration priority.
+
+**Failure and Recovery Testing**
+
+Earlier development included isolated tests for interrupted operations, outdated repository state, ambiguous publication results, and duplicate requests.
+
+Those tests informed the current design, but additional fault testing against the live V3 publishing and recovery process is still needed.
+
+Until that testing is completed, the documented results are limited to the conditions actually exercised.
+
+These are known engineering limitations, not accepted assumptions about how the system will behave under every condition.
 
 ### Current Outcome
 
