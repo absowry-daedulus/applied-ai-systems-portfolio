@@ -132,20 +132,46 @@ Until that test succeeds, **cross-model recovery remains an engineering objectiv
 
 ## Related Development
 
-The persistence work is part of a wider personal AI project. Related components are at different stages of development and are **not presented as completed V3 integrations**.
+Persistence V3 is part of a larger personal AI engineering project. Several supporting components are being developed separately and are not yet fully integrated with the persistence system.
 
-- **Local AI orchestration service:** intended to coordinate models, tools, and approved access to project information without tying the supporting software to one AI provider.
-- **Conversation capture and archival:** preserves conversation material separately from the smaller verified state needed to resume a project. Full historical reconciliation remains unfinished.
-- **Append-only event history:** a proposed durable record of events in sequence, to support future reconstruction and review without rewriting earlier records.
+**Local AI Orchestration**
 
-These components will receive their own engineering records as their implementations and test evidence develop.
+Development is underway on a local service intended to coordinate AI models, tools, and access to project information.
+
+The goal is to reduce dependence on any one AI provider and give the supporting software a consistent way to exchange information with different models.
+
+**Conversation Recording and Archival**
+
+A separate recording and archival process is being developed to preserve conversation records independently of the AI's working context.
+
+This serves a different purpose from the verified project state: conversation archives preserve historical material, while persistence records identify the information needed to continue current work.
+
+Complete historical reconciliation and automated integration remain unfinished.
+
+**Append-Only Event History**
+
+A longer-term development objective is an append-only record of project events. This would provide a historical record for reconstruction and review without modifying earlier entries.
+
+The event-history design and its integration with local orchestration are still under development.
+
+These components will be documented separately as implementation and testing progress.
 
 ## Next Work
 
-The next steps are to establish and test the protected-infrastructure change procedure, make deterministic startup verification available through a consistent read-only interface, complete a verified cross-model recovery test, and continue integration with local orchestration and archival tools.
+The next development priorities are:
 
-Future updates will be added to this log as work is completed. Failed tests and design corrections will remain visible rather than being rewritten into a more convenient development history.
+1. Complete and test the procedure for modifying protected publishing infrastructure.
+2. Provide a consistent read-only interface for automated startup verification.
+3. Demonstrate successful project recovery using a different AI model.
+4. Continue integrating persistence with local orchestration and conversation archival.
+5. Expand failure and recovery testing under live operating conditions.
 
-## Publication Boundary
+Future updates will document completed work, observed results, and design changes. Unsuccessful tests and unresolved problems will remain part of the engineering record.
 
-This public account describes tested behavior and known limitations without releasing the private canonical repository, its operating data, credentials, or protected implementation details. The [original case study](README.md) and its [sanitized example](demo/) remain available for readers who want to examine the underlying engineering approach.
+## Publication and Project Scope
+
+This is a personal, AI-assisted engineering project developed using established engineering practices for requirements, testing, failure investigation, and verification.
+
+The public portfolio documents the engineering approach, observed results, and known limitations. The underlying system, its operational records, and private project information remain outside the public repository.
+
+The [original case study](README.md) and [sanitized demonstration](demo/) provide additional technical background without releasing the private implementation.
