@@ -36,17 +36,23 @@ The result is a separation between **deciding what should be saved, controlling 
 
 ### Verification Results
 
-The design was exercised against the actual GitHub repository rather than assessed only from source code or test descriptions.
+Persistence V3 was tested using the actual GitHub repository, including successful operations and deliberate attempts to perform actions that should be rejected.
+
+The tests focused on three requirements: preventing unauthorized changes, confirming that approved changes are published correctly, and recovering project information in a new AI session.
 
 | Test | Observed result |
 |---|---|
-| Ordinary connection attempts to change the protected branch | Rejected; the branch remained unchanged |
-| Authorized publishing service submits an accepted update | Completed successfully through GitHub Actions |
-| Published commit and file contents are checked after publication | Matched the submitted change |
-| Ordinary development continues on a separate working branch | Succeeded without changing the protected branch |
-| Fresh-session state recovery | Read-only reconstruction was demonstrated with repository evidence; hosted execution of the deterministic boot checker is not yet consistently available |
+| Attempt a direct update to the protected main branch using an ordinary development connection | GitHub rejected the update. The branch remained unchanged. |
+| Publish an approved change using the dedicated GitHub App | The publishing workflow completed successfully and updated the protected branch. |
+| Compare the completed publication with the original request | The resulting commit, changed files, and saved contents matched the submitted update. |
+| Make an authorized change on an unprotected development branch | The change succeeded without modifying the protected main branch. |
+| Recover project state in a fresh AI conversation | A read-only reconstruction was completed using repository records and GitHub verification evidence. The existing automated boot checker was not executed directly in that hosted environment. |
 
-These results establish the tested permission and publishing behavior. They do not constitute a general security audit or proof that every interruption and failure mode has been covered.
+These results confirm that the tested permission controls and publishing process behaved as intended. The repository also retains the underlying test records for further review.
+
+The tests do not establish that every possible failure has been addressed. In particular, additional live recovery testing and consistent access to automated startup verification remain outstanding.
+
+The distinction is important: **a completed software operation is not necessarily a verified result.** The system requires evidence that the expected change occurred before accepting it as part of the project's current state.
 
 ### Findings and Remaining Limitations
 
