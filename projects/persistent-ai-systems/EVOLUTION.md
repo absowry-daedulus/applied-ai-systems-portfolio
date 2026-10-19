@@ -20,17 +20,19 @@ With V3, important information can be saved and verified as work progresses rath
 
 ### Implementation
 
-The updated process uses GitHub to receive, check, publish, and verify proposed changes:
+The updated process separates decisions about what information to save from the tools responsible for saving it.
 
-1. The AI and project operator determine what needs to be retained and whether it belongs in the authoritative project record.
-2. A proposed update is submitted through a controlled intake process. Publication checks enforce file-location rules, information-handling restrictions, and the expected repository state.
-3. A dedicated GitHub App publishes permitted changes to a protected branch. Ordinary development connections cannot update that branch directly.
-4. The publishing workflow verifies the resulting commit and saved file contents. A submitted request or successful tool response alone does not establish completion.
-5. A subsequent session reads the verified repository state and current work handoff without requiring a new startup transaction.
+1. **Prepare the update.** The AI and project operator identify information that needs to be preserved and determine where it belongs, using the project's existing approval rules.
+2. **Check the proposed change.** The update is submitted through GitHub. Automated checks verify the requested file locations, information-handling restrictions, and expected repository state before publication.
+3. **Control who can publish.** The main project branch is protected against direct changes from ordinary development connections. A dedicated GitHub App is authorized to publish changes that pass the required checks.
+4. **Verify the result.** The publishing workflow checks the resulting commit and saved file contents. An update is not considered complete until the workflow finishes successfully and the published information is confirmed.
+5. **Recover the current state.** A new AI session retrieves the project information and supporting verification records before resuming work. Startup does not require creating a new session transaction.
 
-Session closeout is still useful for reviewing what may have been missed. It is no longer the required transaction that makes work durable.
+The earlier process depended on reconciling project information at the end of a conversation. V3 allows important changes to be saved throughout the session instead.
 
-This separates the AI's role in proposing and organizing information from the permissions and checks used to publish it.
+Session closeout remains useful for reviewing anything that may have been missed, but it is no longer required to make individual updates permanent.
+
+The result is a separation between **deciding what should be saved, controlling how it is published, and verifying that publication succeeded.**
 
 ### Verification Results
 
